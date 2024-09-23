@@ -49,7 +49,7 @@ func (p *PriceMonitor) Fetch() error {
 
 func (p *PriceMonitor) Save(service services.PriceService) error {
 	price := database.Price{
-		Id:            p.Id,
+		IdProduct:     p.Id,
 		Price:         p.Price,
 		BasePrice:     p.BasePrice,
 		OriginalPrice: p.OriginalPrice,

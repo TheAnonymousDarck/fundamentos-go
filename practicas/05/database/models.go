@@ -4,7 +4,8 @@ import "gorm.io/gorm"
 
 type Price struct {
 	gorm.Model
-	Id            string `gorm:"primarykey"`
+	ID            int `gorm:"primarykey; autoincrement"`
+	IdProduct     string
 	Price         float64
 	BasePrice     float64
 	OriginalPrice float64
