@@ -1,6 +1,7 @@
 package services
 
 import (
+	"gorm.io/gorm"
 	"meliitems/database"
 )
 
@@ -13,11 +14,10 @@ type itemService struct {
 }
 
 func NewItemService(db *gorm.DB) ItemService {
-	return &itemService(db)
+	return &itemService{db}
 }
 
-
-func (i *itemService) CreateItem(item database,Item) error {
+func (i *itemService) CreateItem(item database.Item) error {
 	err := i.db.Create(&item)
 
 	return err.Error

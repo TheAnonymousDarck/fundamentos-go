@@ -1,10 +1,10 @@
-package main
+package monitor
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"io"
+	config "modulos/config"
 	"net/http"
 	"os"
 	"time"
@@ -20,7 +20,7 @@ type PriceMonitor struct {
 }
 
 func (p *PriceMonitor) Fetch() error {
-	response, err := p.httpClient.Get("https://api.mercadolibre.com/items/" + p.Id)
+	response, err := p.httpClient.Get(config.MELI_URL + "/items/" + p.Id)
 	if err != nil {
 		fmt.Println("error al obtener el precio del item")
 		return err
@@ -69,38 +69,6 @@ func (p *PriceMonitor) Save() error {
 	return nil
 }
 
-func main() {
-	client := &http.Client{}
-	cronJob := cron.New()
-
-	_, err := cronJob.AddFunc("@every 2s", func() {
-		println("Se ejecuta cada 2 segundos")
-		priceMonitor := PriceMonitor{
-			Id:         "MLM2590077782",
-			httpClient: client,
-		}
-
-		err := priceMonitor.Fetch()
-		if err != nil {
-			return
-		}
-
-		err = priceMonitor.Save()
-		if err != nil {
-			return
-		}
-
-		println("Precio actual: ", priceMonitor.Price)
-
-		err = priceMonitor.Fetch()
-		if err != nil {
-			fmt.Println("error al obtener el precio del item")
-		}
-	})
-	if err != nil {
-		return
-	}
-	cronJob.Start()
-
-	select {}
+func NewPriceMonitor(id string, client *http.Client) *PriceMonitor {
+	return &PriceMonitor{Id: id, httpClient: http.DefaultClient}
 }

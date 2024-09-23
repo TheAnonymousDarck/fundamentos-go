@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"meliitems/database"
+	"meliitems/services"
 	"net/http"
 	"net/url"
 	"os"
-	
-	"gorm.io/driver/mysql"
-  	"gorm.io/gorm"
 )
 
 type Item struct {
@@ -26,16 +25,21 @@ type Response struct {
 }
 
 func main() {
-	db,err := databse.newDatabaseDriver()
+	db, err := database.NewDatabaseDriver()
+
 	if err != nil {
 		fmt.Println("Error al conectar a la base de datos: ", err)
-		return nil, err
+		return
 	}
+
 	fmt.Println("Conexión exitosa")
-	db.AutoMigrate(&database.Item{})
+	err = db.AutoMigrate(&database.Item{})
+	if err != nil {
+		return
+	}
 	itemService := services.NewItemService(db)
 	err = itemService.CreateItem(database.Item{
-		Id: "MLM123456",
+		Id:    "MLM123456",
 		Title: "Motorola G6",
 		Price: 5000.00,
 	})
@@ -45,7 +49,7 @@ func main() {
 	}
 	return
 
-
+	client := &http.Client{}
 	q := "Motorola"
 	resp, err := client.Get("https://api.mercadolibre.com/sites/MLM/search?q=" + url.QueryEscape(q))
 
