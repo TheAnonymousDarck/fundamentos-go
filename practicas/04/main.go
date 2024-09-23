@@ -8,7 +8,6 @@ import (
 	"meliitems/services"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 type Item struct {
@@ -38,16 +37,6 @@ func main() {
 		return
 	}
 	itemService := services.NewItemService(db)
-	err = itemService.CreateItem(database.Item{
-		Id:    "MLM123456",
-		Title: "Motorola G6",
-		Price: 5000.00,
-	})
-
-	if err != nil {
-		fmt.Println("Error al crear el item: ", err)
-	}
-	return
 
 	client := &http.Client{}
 	q := "Motorola"
@@ -58,7 +47,12 @@ func main() {
 		return
 	}
 
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("Error", err)
+		}
+	}(resp.Body)
 	fmt.Println("Response status:", resp.StatusCode)
 	fmt.Println("Body:", resp.Body)
 
@@ -78,28 +72,20 @@ func main() {
 
 	for _, item := range response.Items {
 		fmt.Println("id:", item.Id)
+		item := database.Item{
+			Id:         item.Id,
+			Title:      item.Title,
+			Price:      item.Price,
+			Condition:  item.Condition,
+			CategoryId: item.CategoryId,
+			Url:        item.Url,
+		}
+
+		err = itemService.CreateItem(item)
+		if err != nil {
+			fmt.Println("Error al crear el item", err)
+		}
 	}
 
-	//	Creamos el JSON
-	file, err := os.Create("items.json")
-	defer file.Close()
-	if err != nil {
-		fmt.Println("Error", err)
-		return
-	}
-
-	fileData, err := json.Marshal(response.Items)
-
-	if err != nil {
-		fmt.Println("Error", err)
-		return
-	}
-
-	_, err = file.Write(fileData)
-
-	if err != nil {
-		fmt.Println("Error al escribir el archivo", err)
-		return
-	}
-
+	fmt.Println("Items creados exitosamente en la base de datos")
 }
